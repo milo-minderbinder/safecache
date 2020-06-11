@@ -176,6 +176,13 @@ def safecache(
         currsize: int = len(cache)
         return CacheInfo(**locals())
 
+    def _cache_clear():
+        nonlocal hits, misses
+        with w_mutex:
+            cache.clear()
+            pq.clear()
+            hits = misses = 0
+
     def impl(function):
         @wraps(function)
         @mutabletypeguard
@@ -221,5 +228,6 @@ def safecache(
                     hits += 1
             return cache.__getitem__(key).value
         wrapper.cache_info = _cache_info
+        wrapper.cache_clear = _cache_clear
         return wrapper
     return impl
