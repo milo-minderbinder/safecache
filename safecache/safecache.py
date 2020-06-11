@@ -181,8 +181,11 @@ def safecache(
         @mutabletypeguard
         def wrapper(*entry, **kw):
             nonlocal hits, misses
-            # normalize parameters to hashable strings.
-            key: Text = sha1(pickle.dumps((*entry, kw), protocol=3)).hexdigest()
+            # normalize parameters to hashable strings (ignoring first argument/"self" if decorating a method).
+            if function.__name__ != function.__qualname__:
+                key: Text = sha1(pickle.dumps((*entry[1:], kw), protocol=3)).hexdigest()
+            else:
+                key: Text = sha1(pickle.dumps((*entry, kw), protocol=3)).hexdigest()
             try:
                 if key not in cache:
                     raise CacheMiss
